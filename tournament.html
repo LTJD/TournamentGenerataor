@@ -1,0 +1,232 @@
+<html ng-app="genaratorApp"">
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+<script src="jquery-1.11.3.js"></script>
+<style>
+	#settingsDiv{
+	width: 250px;
+	float: left;
+	height: 100%;
+	background-color: #69f;
+	}
+	#tournamentDiv{
+	
+	}
+	body, html {
+    height: 100%;
+}
+</style>
+<title>Tournamant Generator</title>
+<script>
+var tornamentType;
+	var teams = [];
+	var games = []; 
+	var fields = [];
+	
+	var schedual = [{"RoundNr":1,"Pairs":[{"Pair":[{"home":"Team A","away":"Team B","field":"anfield"}]}, {"Pair":[{"home":"Team C","away":"Team D","field":"himnaplan"}]}]},{"RoundNr":2,"Pairs":[{"Pair":[{"home":"Team A","away":"Team B","field":"ullevi"}]}, {"Pair":[{"home":"Team C","away":"Team D","field":"Tele 2"}]}]}];
+
+var tournamentGen = angular.module('genaratorApp',[]);
+tournamentGen.controller('GameList', function ($scope,$interval) {
+  $scope.sched = schedual;
+  
+  $interval(function() {
+        $scope.sched = schedual;
+    }, 500);
+  
+});
+
+function generatTournament(){
+	teams.length = 0;
+	games.length = 0;
+	fields.length = 0;
+	schedual.length = 0;
+	
+	tornamentType = $("#tournamentType").val();
+	//Extract teams
+	$("[id^=teamName]").each(function(){
+		 teams.push($(this).val());
+	});
+	//Enough teams?
+	if(tornamentType == 4 && teams.length < 5){
+		alert("Four games garantie requires 5 or more teams");
+		return;
+	}
+	//Extract fields
+	$("[id^=fieldName]").each(function(){
+		if($(this).val() == ""){ fields.push($(this).parent().text());}
+		else{ fields.push($(this).val());}
+	});
+	
+	var gameSelection = createMatchUp(tornamentType,teams);
+	present(gameSelection);
+}
+
+function present(selectedGames){
+	var gameDiv = $("#schedual");
+	for(var i = 0; i < selectedGames.length; i++){
+		var theGame = selectedGames[i];
+		schedual.push(theGame);
+		//gameDiv.append("<div class='game' id='game" + i + "' >{{" + theGame[0] + "}} vs {{" + theGame[1] + "}}</div>");
+	}
+	alert(JSON.stringify(schedual));
+}
+
+
+
+function createMatchUp(tornamentType, teams){
+	var selectedIds = [];
+	var selectedGames = [];
+	var rounds = [];
+	var roundConter = 1;
+	var fieldNr = 0;
+	var pairs = [];
+	var n = teams.length;
+	switch(tornamentType){
+		case "0": //Round Robin. Distribute games
+			for(var r = 1; r < n; r++){
+				
+				for( var i=1; i<=(n/2); i++){
+					if(i==1){
+						pairs.push({"Pair":[{"home": teams[0] , "away" : teams[((n-1+r-i) % (n-1) + 2) -1 ],"field":fields[fieldNr]}]});
+						fieldNr++;
+						if (fieldNr == fields.length){fieldNr = 0;}
+						}
+					else
+					{
+						pairs.push({"Pair":[{"home": teams[((r+i-2) % (n-1) + 2)-1],"away": teams[((n-1+r-i) %(n-1)+2)-1],"field":fields[fieldNr]}]});
+						fieldNr++;
+						if (fieldNr == fields.length){fieldNr = 0;}
+						}
+				
+				if(pairs.length == fields.length || pairs.length == n/2){
+					selectedGames.push({'RoundNr':roundConter, "Pairs":pairs});
+					roundConter++;
+					pairs = [];
+				}
+				}
+				
+			}
+			if(pairs.length > 0){
+				selectedGames.push({'RoundNr':roundConter, "Pairs":pairs});
+					roundConter++;
+					pairs = [];
+			}
+			
+			//selectedGames.push(rounds);
+		break;
+		default:
+			var g = parseInt(tornamentType);
+			for(var r = 1; r <= g; r++){
+				
+				for( var i=1; i<=(n/2); i++){
+					if(i==1){
+						pairs.push({"Pair":[{"home": teams[0] , "away" : teams[((n-1+r-i) % (n-1) + 2) -1 ],"field":fields[fieldNr]}]});
+						fieldNr++;
+						if (fieldNr == fields.length){fieldNr = 0;}
+						}
+					else
+					{
+						pairs.push({"Pair":[{"home": teams[((r+i-2) % (n-1) + 2)-1],"away": teams[((n-1+r-i) %(n-1)+2)-1],"field":fields[fieldNr]}]});
+						fieldNr++;
+						if (fieldNr == fields.length){fieldNr = 0;}
+						}
+				
+				if(pairs.length == fields.length || pairs.length == n/2){
+					selectedGames.push({'RoundNr':roundConter, "Pairs":pairs});
+					roundConter++;
+					pairs = [];
+				}
+				}
+				
+			}
+			if(n%2 == 1){
+				var o = g+1;
+				for( var i=1; i<=(n/2); i++){
+					if(i==1){
+						pairs.push({"Pair":[{"home": teams[0] , "away" : teams[((n-1+o-i) % (n-1) + 2) -1 ],"field":fields[fieldNr]}]});
+						fieldNr++;
+						if (fieldNr == fields.length){fieldNr = 0;}
+						}
+					else
+					{
+						pairs.push({"Pair":[{"home": teams[((o+i-2) % (n-1) + 2)-1],"away": teams[((n-1+o-i) %(n-1)+2)-1],"field":fields[fieldNr]}]});
+						fieldNr++;
+						if (fieldNr == fields.length){fieldNr = 0;}
+						}
+				
+				if(pairs.length == fields.length || pairs.length == n/2){
+					selectedGames.push({'RoundNr':roundConter, "Pairs":pairs});
+					roundConter++;
+					pairs = [];
+				}
+				}
+			}
+			if(pairs.length > 0){
+				selectedGames.push({'RoundNr':roundConter, "Pairs":pairs});
+					roundConter++;
+					pairs = [];
+			}
+			
+			
+		break;
+	}
+	return selectedGames;
+}
+
+function appendTeam(){
+	var targetDiv = $("#teams :input:button ");
+	var numberOfTeams = $("[id^=teamName]").length+1;
+	targetDiv.before("<div id='team" + numberOfTeams +"'>" + numberOfTeams + " <input type='text' id='teamName" + numberOfTeams + "' value='Team nr " + numberOfTeams + "'></div>" );
+}
+
+function appendField(){
+	var targetDiv = $("#fields :input:button ");
+	var numberOfFeildes = $("[id^=fieldName]").length+1;
+	targetDiv.before("<div id='field" + numberOfFeildes + "'> "+ numberOfFeildes +" <input type='text' id='fieldName" + numberOfFeildes +"'></div>");
+}
+
+</script>
+</head>
+<body ng-controller="GameList">
+<div id="settingsDiv">
+<div id="generalSettings">
+Torunament name: <input type="text" value="My Tournamant" ng-model="tournamentName" id="tournamentName"><br />
+Tournament type: <select  id="tournamentType">
+<option value="0">Round Robin</option>
+<option value="2">Two games garantie</option>
+<option value="3">Tree games garantie </option>
+<option value="4">Four games garantie</option>
+</select><br />	
+</div>
+<div id="teams">
+Teams:
+<div id="team1">1 <input type="text" id="teamName1" value="Team nr 1"></div>
+<div id="team2">2 <input type="text" id="teamName2" value="Team nr 2"></div>
+<div id="team3">3 <input type="text" id="teamName3" value="Team nr 3"></div>
+<div id="team4">4 <input type="text" id="teamName4" value="Team nr 4"></div>
+<input type="button" value="Add team" onclick="appendTeam();" />
+</div>
+<div id="fields">
+Fields:
+<div id="field1">1 <input type="text" id="fieldName1"></div>
+<input type="button" value="Add Field" onclick="appendField();" />
+</div>
+
+<input type="button" value="Generate" onclick="generatTournament();" />
+</div>
+<div id="tournamentDiv">
+<h1>{{tournamentName}}</h1>
+
+<div ng-repeat="Round in sched">
+Round number {{Round.RoundNr}}:
+<div ng-repeat="Pairs in Round.Pairs"> 
+<table>
+<tr ng-repeat="Pair in Pairs.Pair">
+	<td>{{Round.RoundNr}}</td><td>{{Pair.home}}</td><td>{{Pair.away}}</td><td>{{Pair.field}}</td>
+	</tr>
+</table>
+</div>
+</div>
+</div>
+</body>
+</html>
