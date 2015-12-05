@@ -10,8 +10,39 @@
 	background-color: #69f;
 	}
 	#tournamentDiv{
-	
+		float:left;
 	}
+	#matchUp
+	{
+		width: 250px;
+		height: 150px;
+		background-color: white;
+	}
+	#homeTeam
+	{
+		float:left;
+		width: 100px;
+		height: 100px;
+	}
+	#awayTeam
+	{
+		float:left;
+		width: 100px;
+		height: 100px;
+	}
+	#versus
+	{
+		float:left;
+		width: 50px;
+		height: 100px;
+		background-color: grey;
+	}
+	#matchUpInfo
+	{}
+	.team1{background-color: blue;}
+	.team2{background-color: green;}
+	.team3{background-color: red;}
+	.team4{background-color: olive;}
 	body, html {
     height: 100%;
 }
@@ -23,7 +54,7 @@ var tornamentType;
 	var games = []; 
 	var fields = [];
 	
-	var schedual = [{"RoundNr":1,"Pairs":[{"Pair":[{"home":"Team A","away":"Team B","field":"anfield"}]}, {"Pair":[{"home":"Team C","away":"Team D","field":"himnaplan"}]}]},{"RoundNr":2,"Pairs":[{"Pair":[{"home":"Team A","away":"Team B","field":"ullevi"}]}, {"Pair":[{"home":"Team C","away":"Team D","field":"Tele 2"}]}]}];
+	var schedual = [{"RoundNr":1,"Pairs":[{"Pair":[{"home":[{"name":"Team A","css":"team1"}],"away":[{"name":"Team B","css":"team2"}],"field":"anfield"}]}, {"Pair":[{"home":[{"name":"Team C","css":"team3"}],"away":[{"name":"Team D","css":"team4"}],"field":"himnaplan"}]}]},{"RoundNr":2,"Pairs":[{"Pair":[{"home":[{"name":"Team A","css":"team1"}],"away":[{"name":"Team B","css":"team2"}],"field":"ullevi"}]}, {"Pair":[{"home":[{"name":"Team C","css":"team3"}],"away":[{"name":"Team D","css":"team4"}],"field":"Tele 2"}]}]}];
 
 var tournamentGen = angular.module('genaratorApp',[]);
 tournamentGen.controller('GameList', function ($scope,$interval) {
@@ -87,13 +118,13 @@ function createMatchUp(tornamentType, teams){
 				
 				for( var i=1; i<=(n/2); i++){
 					if(i==1){
-						pairs.push({"Pair":[{"home": teams[0] , "away" : teams[((n-1+r-i) % (n-1) + 2) -1 ],"field":fields[fieldNr]}]});
+						pairs.push({"Pair":[{"home":[{"name": teams[0],"css": "team1"}] , "away" :[{"name": teams[((n-1+r-i) % (n-1) + 2) -1 ],"css":"team"+(((n-1+r-i) % (n-1) + 2))  }],"field":fields[fieldNr]}]});
 						fieldNr++;
 						if (fieldNr == fields.length){fieldNr = 0;}
 						}
 					else
 					{
-						pairs.push({"Pair":[{"home": teams[((r+i-2) % (n-1) + 2)-1],"away": teams[((n-1+r-i) %(n-1)+2)-1],"field":fields[fieldNr]}]});
+						pairs.push({"Pair":[{"home":[{"name": teams[((r+i-2) % (n-1) + 2)-1],"css":"team"+((r+i-2) % (n-1) + 2)}],"away": [{"name": teams[((n-1+r-i) %(n-1)+2)-1],"css":"team"+((n-1+r-i) %(n-1)+2) }],"field":fields[fieldNr]}]});
 						fieldNr++;
 						if (fieldNr == fields.length){fieldNr = 0;}
 						}
@@ -197,6 +228,8 @@ Tournament type: <select  id="tournamentType">
 <option value="3">Tree games garantie </option>
 <option value="4">Four games garantie</option>
 </select><br />	
+Start time: <input type="text" value="10:00" ng-model="startTime" id="startTime"><br />
+Round time: <input type="text" value="20" ng-model="roundTime" id="roundTime"><br />
 </div>
 <div id="teams">
 Teams:
@@ -220,11 +253,15 @@ Fields:
 <div ng-repeat="Round in sched">
 Round number {{Round.RoundNr}}:
 <div ng-repeat="Pairs in Round.Pairs"> 
-<table>
-<tr ng-repeat="Pair in Pairs.Pair">
-	<td>{{Round.RoundNr}}</td><td>{{Pair.home}}</td><td>{{Pair.away}}</td><td>{{Pair.field}}</td>
-	</tr>
-</table>
+<div>
+<div id="matchUp" ng-repeat="Pair in Pairs.Pair">
+	<div>{{Round.RoundNr}}</div>
+	<div ng-repeat="Home in Pair.home"><div id="homeTeam" ng-class="Home.css">{{Home.name}}</div></div>
+	<div id="versus">VS</div>
+	<div ng-repeat="Away in Pair.away"><div id="awayTeam" ng-class="Away.css">{{Away.name}}</div></div>
+	<div>{{Pair.field}}</div>
+	</div>
+</div>
 </div>
 </div>
 </div>
